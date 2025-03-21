@@ -1,0 +1,317 @@
+openapi: 3.0.0
+info:
+  title: 消息中心API
+  description: 消息中心系统API，提供消息发送和模板管理功能
+  version: 1.0.0
+servers:
+  - url: http://localhost:8081
+    description: 本地开发服务器
+paths:
+  /msg/send_msg:
+    post:
+      summary: 发送消息
+      description: 使用指定模板发送消息
+      operationId: sendMsg
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMsgReq'
+      responses:
+        '200':
+          description: 成功发送消息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendMsgResp'
+  /msg/get_msg_record:
+    get:
+      summary: 获取消息记录
+      description: 通过消息ID获取消息记录
+      operationId: getMsgRecord
+      parameters:
+        - name: msgID
+          in: query
+          description: 消息ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功获取消息记录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetMsgRecordResp'
+  /msg/create_template:
+    post:
+      summary: 创建消息模板
+      description: 创建一个新的消息模板
+      operationId: createTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTemplateReq'
+      responses:
+        '200':
+          description: 成功创建模板
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTemplateResp'
+  /msg/get_template:
+    get:
+      summary: 获取模板信息
+      description: 通过模板ID获取模板详细信息
+      operationId: getTemplate
+      parameters:
+        - name: templateID
+          in: query
+          description: 模板ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功获取模板信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTemplateResp'
+  /msg/update_template:
+    post:
+      summary: 更新模板
+      description: 更新指定模板的信息
+      operationId: updateTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTemplateReq'
+      responses:
+        '200':
+          description: 成功更新模板
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateTemplateResp'
+  /msg/del_template:
+    post:
+      summary: 删除模板
+      description: 删除指定的模板
+      operationId: delTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DelTemplateReq'
+      responses:
+        '200':
+          description: 成功删除模板
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelTemplateResp'
+components:
+  schemas:
+    RespComm:
+      type: object
+      description: 通用响应结构
+      properties:
+        code:
+          type: integer
+          description: 响应状态码，0表示成功
+        msg:
+          type: string
+          description: 响应消息
+    SendMsgReq:
+      type: object
+      description: 发送消息请求
+      required:
+        - to
+        - templateID
+        - templateData
+      properties:
+        to:
+          type: string
+          description: 接收者
+        subject:
+          type: string
+          description: 消息主题
+        priority:
+          type: integer
+          description: 消息优先级
+        templateID:
+          type: string
+          description: 模板ID
+        templateData:
+          type: object
+          additionalProperties:
+            type: string
+          description: 模板数据，用于填充模板内容
+        sendTimestamp:
+          type: integer
+          format: int64
+          description: 发送时间戳
+    SendMsgResp:
+      type: object
+      description: 发送消息响应
+      allOf:
+        - $ref: '#/components/schemas/RespComm'
+        - type: object
+          properties:
+            msgID:
+              type: string
+              description: 消息ID
+    GetMsgRecordReq:
+      type: object
+      description: 获取消息记录请求
+      required:
+        - msgID
+      properties:
+        msgID:
+          type: string
+          description: 消息ID
+    GetMsgRecordResp:
+      type: object
+      description: 获取消息记录响应
+      allOf:
+        - $ref: '#/components/schemas/RespComm'
+        - type: object
+          properties:
+            to:
+              type: string
+              description: 接收者
+            subject:
+              type: string
+              description: 消息主题
+            templateID:
+              type: string
+              description: 模板ID
+            templateData:
+              type: object
+              additionalProperties:
+                type: string
+              description: 模板数据
+    CreateTemplateReq:
+      type: object
+      description: 创建模板请求
+      required:
+        - sourceID
+        - name
+        - channel
+        - content
+      properties:
+        sourceID:
+          type: string
+          description: 源ID
+        name:
+          type: string
+          description: 模板名称
+        subject:
+          type: string
+          description: 主题
+        signName:
+          type: string
+          description: 签名名称
+        channel:
+          type: integer
+          description: 渠道
+        content:
+          type: string
+          description: 模板内容
+    CreateTemplateResp:
+      type: object
+      description: 创建模板响应
+      allOf:
+        - $ref: '#/components/schemas/RespComm'
+        - type: object
+          properties:
+            templateID:
+              type: string
+              description: 模板ID
+    GetTemplateReq:
+      type: object
+      description: 获取模板请求
+      required:
+        - templateID
+      properties:
+        templateID:
+          type: string
+          description: 模板ID
+    GetTemplateResp:
+      type: object
+      description: 获取模板响应
+      allOf:
+        - $ref: '#/components/schemas/RespComm'
+        - type: object
+          properties:
+            relTemplateID:
+              type: string
+              description: 关联模板ID
+            sourceID:
+              type: string
+              description: 源ID
+            signName:
+              type: string
+              description: 签名名称
+            name:
+              type: string
+              description: 模板名称
+            subject:
+              type: string
+              description: 主题
+            channel:
+              type: integer
+              description: 渠道
+            content:
+              type: string
+              description: 模板内容
+    UpdateTemplateReq:
+      type: object
+      description: 更新模板请求
+      required:
+        - templateID
+      properties:
+        templateID:
+          type: string
+          description: 模板ID
+        name:
+          type: string
+          description: 模板名称
+        sourceID:
+          type: string
+          description: 源ID
+        subject:
+          type: string
+          description: 主题
+        channel:
+          type: integer
+          description: 渠道
+        content:
+          type: string
+          description: 模板内容
+    UpdateTemplateResp:
+      type: object
+      description: 更新模板响应
+      allOf:
+        - $ref: '#/components/schemas/RespComm'
+    DelTemplateReq:
+      type: object
+      description: 删除模板请求
+      required:
+        - templateID
+      properties:
+        templateID:
+          type: string
+          description: 模板ID
+    DelTemplateResp:
+      type: object
+      description: 删除模板响应
+      allOf:
+        - $ref: '#/components/schemas/RespComm'
